@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskTracker</title>
+    <style>
+        /* Your CSS goes here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #dde6e6;
+        }
+
+        header {
+            background-color: #333;
+            color: #e8e2e2;
+            padding: 1rem 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        nav .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 2rem 0;
+            
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            margin: 0.5rem 0;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .hero button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            background-color: #28a745;
+            
+            border: none;
+            cursor: pointer;
+        }
+
+        .hero button:hover {
+            background-color: #218838;
+        }
+
+        .add-homework, .homework-list {
+            
+            padding: 2rem 0;
+            width: 80%;
+            margin: 1rem auto;
+            text-align: center;
+        }
+
+        .add-homework form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .add-homework input, .add-homework textarea, .add-homework select {
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .homework-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .homework-list li {
+            background-color: #f9f9f9;
+            margin: 0.5rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .homework-list li.completed {
+            text-decoration: line-through;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            text-align: center;  
+            padding: 1rem 0;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">TaskTracker</div>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>ORGANISE-PRIORITIZE-ACHIEVE</h1>
+            <p>"Our Website is Easy to Use and Getting organized is proven to help you Be at your best."</p>
+            <button id="try-it-now-btn">Try It Now</button>
+        </section>
+        <section class="add-homework" id="add-homework">
+            <h2>Add Homework</h2>
+            <form id="homework-form">
+                <input type="text" id="subject" placeholder="Subject Name" required>
+                <input type="text" id="type" placeholder="Homework Type" required>
+                <textarea id="description" placeholder="Description" required></textarea>
+                <select id="priority" required>
+                    <option value="" disabled selected>Select Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <textarea id="additional-info" placeholder="Additional Info"></textarea>
+                <input type="datetime-local" id="deadline" required>
+                <label for="freetime">Free Time:</label>
+                <input type="datetime-local" id="freetime" required>
+                <div class="buttons">
+                    <button type="button" id="save-btn">SAVE</button>
+                    <button type="button" id="cancel-btn">CANCEL</button>
+                </div>
+            </form>
+        </section>
+        <section class="homework-list">
+            <h2>Homework List</h2>
+            <ul id="homework-items"></ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 TaskTracker. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script>
+        // Initialize EmailJS with your User ID and Service ID
+        emailjs.init('<8yBaHQ92MsaAPpXLe>');
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("homework-form");
+            const homeworkList = document.getElementById("homework-items");
+            const saveBtn = document.getElementById("save-btn");
+            const cancelBtn = document.getElementById("cancel-btn");
+            const tryItNowBtn = document.getElementById("try-it-now-btn");
+            let homeworkItems = [];
+
+            tryItNowBtn.addEventListener("click", () => {
+                document.getElementById("add-homework").scrollIntoView({ behavior: "smooth" });
+            });
+
+            saveBtn.addEventListener("click", () => {
+                saveHomework();
+                form.reset();
+            });
+
+            cancelBtn.addEventListener("click", () => {
+                form.reset();
+            });
+
+            function saveHomework() {
+                const subject = document.getElementById("subject").value;
+                const type = document.getElementById("type").value;
+                const description = document.getElementById("description").value;
+                const priority = document.getElementById("priority").value;
+                const additionalInfo = document.getElementById("additional-info").value;
+                const deadline = new Date(document.getElementById("deadline").value);
+                const freeTime = new Date(document.getElementById("freetime").value);
+
+                if (subject && type && description && priority && deadline) {
+                    const homework = {
+                        subject: subject,
+                        type: type,
+                        description: description,
+                        priority: priority,
+                        additionalInfo: additionalInfo,
+                        deadline: deadline,
+                        freeTime: freeTime
+                    };
+
+                    homeworkItems.push(homework);
+                    sortHomeworkItems();
+                    renderHomeworkItems();
+                    setReminder(homework.deadline, `Reminder: Your homework for ${subject} is due in one hour!`, subject);
+                    setReminder(homework.freeTime, `Reminder: Your Opportunity to make progress on your ${subject} assignment awaits in just one hour. Embrace it!`, subject);
+                }
+            }
+
+            function addHomework(homework) {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <div>Subject: ${homework.subject}</div>
+                    <div>Type: ${homework.type}</div>
+                    <div>Description: ${homework.description}</div>
+                    <div>Priority: ${homework.priority}</div>
+                    <div>Additional Info: ${homework.additionalInfo}</div>
+                    <div>Deadline: ${formatDate(homework.deadline)}</div>
+                    <div>Free Time: ${formatDate(homework.freeTime)}</div>
+                    <button class="complete-btn">Complete</button>
+                    <button class="delete-btn">Delete</button>
+                `;
+                homeworkList.appendChild(li);
+
+                const completeBtn = li.querySelector(".complete-btn");
+                const deleteBtn = li.querySelector(".delete-btn");
+
+                completeBtn.addEventListener("click", () => {
+                    li.classList.toggle("completed");
+                });
+
+                deleteBtn.addEventListener("click", () => {
+                    homeworkList.removeChild(li);
+                    homeworkItems = homeworkItems.filter(item => item !== homework);
+                });
+            }
+
+            function formatDate(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`; // Corrected syntax
+                return `${day}/${month}/${year} ${timeString}`; // Corrected syntax
+            }
+
+            function setReminder(dateTime, message, subject) {
+                const now = new Date();
+                const timeToReminder = dateTime - now;
+                const oneHourBefore = timeToReminder - (60 * 60 * 1000);
+
+                if (oneHourBefore > 0) {
+                    setTimeout(() => {
+                        sendEmail(subject, message);
+                        alert(message); // Optionally, keep or remove this alert
+                    }, oneHourBefore);
+                }
+            }
+
+            function sendEmail(subject, message) {
+                // Use EmailJS to send email
+                emailjs.send('<service_nbln029>', '<template_1y6ovk9>', {
+                    to_email: 'priyaalwal123@.com',  // Replace with your email address to receive notifications
+                    subject: subject,
+                    message: message
+                })
+                .then(function(response) {
+                    console.log('Email sent successfully:', response);
+                }, function(error) {
+                    console.error('Error sending email:', error);
+                });
+            }
+
+            function sortHomeworkItems() {
+                homeworkItems.sort((a, b) => {
+                    const dateComparison = a.deadline - b.deadline;
+                    if (dateComparison !== 0) {
+                        return dateComparison;
+                    } else {
+                        const priorityOrder = { "High": 1, "Medium": 2, "Low": 3 };
+                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    }
+                });
+            }
+
+            function renderHomeworkItems() {
+                homeworkList.innerHTML = "";
+                homeworkItems.forEach(addHomework);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Body background */
+        body {
+            background-image: url("images/image.png");
+            background-repeat: no-repeat;
+            background-attachment:fixed;
+            background-size:100% 100%;
+            background-position: center;
+            font-family: Arial, sans-serif;
+    
+        }
+
+        /* Header styles */
+        header {
+           
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        nav ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #ede9e9;
+        }
+
+        /* Button styles */
+        .try-it-now-btn {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Main section styles */
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        /* Footer styles */
+        footer {
+           
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TASK TRACKER</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showSection('about')">About</a></li>
+                <li><a href="#" onclick="showSection('features')">Features</a></li>
+                <li><a href="#" onclick="showSection('contact')">Contact Us</a></li>
+            </ul>
+        </nav>
+        <a href="add-homework" class="NEXT-btn">NEXT</a>
+    </header>
+    <main>
+        <section id="about">
+            <h2 style="color: #f0f0f0;">About Us</h2>
+            <p style="color: #f0f0f0;">Task Tracker helps you keep track of your tasks easily.</p>
+        </section>
+        <section id="features">
+            <h2>Features</h2>
+            <p>Input homework assignments with subject name, description,<br> type, priority, and additional details.<br>
+                <br>
+                Schedule free time slots for completing assignments.<br>
+                <br>
+                Set due dates and activate reminders for timely completion.</p>
+        </section>
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>Get in touch with us for any queries or support.</p>
+            <!-- Contact information -->
+            <p>Email: support@tasktracker.com</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Task Tracker. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // JavaScript function to show the selected section
+        function showSection(sectionId) {
+            var sections = document.querySelectorAll('section');
+            for (var i = 0; i < sections.length; i++) {
+                if (sections[i].id === sectionId) {
+                    sections[i].classList.add('active');
+                } else {
+                    sections[i].classList.remove('active');
+                }
+            }
+        }
+
+        // On page load, hide all sections
+        document.addEventListener("DOMContentLoaded", function() {
+            var sections = document.querySelectorAll('section');
+            for (var i = 0; i < sections.length; i++) {
+                sections[i].classList.remove('active');
+            }
+        });
+
+        // JavaScript for handling form submissions and homework items
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("homework-form");
+            const homeworkList = document.getElementById("homework-items");
+            const saveBtn = document.getElementById("save-btn");
+            const saveAddAnotherBtn = document.getElementById("save-add-another-btn");
+            const cancelBtn = document.getElementById("cancel-btn");
+
+            let homeworkItems = [];
+
+            saveBtn.addEventListener("click", () => {
+                saveHomework();
+                form.reset();
+            });
+
+            saveAddAnotherBtn.addEventListener("click", () => {
+                saveHomework();
+            });
+
+            cancelBtn.addEventListener("click", () => {
+                form.reset();
+            });
+
+            function saveHomework() {
+                const subject = document.getElementById("subject").value;
+                const type = document.getElementById("type").value;
+                const description = document.getElementById("description").value;
+                const priority = document.getElementById("priority").value;
+                const additionalInfo = document.getElementById("additional-info").value;
+                const deadline = document.getElementById("deadline").value;
+
+                if (subject && type && description && priority && deadline) {
+                    const homework = {
+                        subject: subject,
+                        type: type,
+                        description: description,
+                        priority: priority,
+                        additionalInfo: additionalInfo,
+                        deadline: new Date(deadline)
+                    };
+
+                    homeworkItems.push(homework);
+                    sortHomeworkItems();
+                    renderHomeworkItems();
+                    setReminder(homework);
+                }
+            }
+
+            function addHomework(homework) {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <div>Subject: ${homework.subject}</div>
+                    <div>Type: ${homework.type}</div>
+                    <div>Description: ${homework.description}</div>
+                    <div>Priority: ${homework.priority}</div>
+                    <div>Additional Info: ${homework.additionalInfo}</div>
+                    <div>Deadline: ${formatDate(homework.deadline)}</div>
+                    <button class="complete-btn">Complete</button>
+                    <button class="delete-btn">Delete</button>
+                `;
+                homeworkList.appendChild(li);
+
+                const completeBtn = li.querySelector(".complete-btn");
+                const deleteBtn = li.querySelector(".delete-btn");
+
+                completeBtn.addEventListener("click", () => {
+                    li.classList.toggle("completed");
+                });
+
+                deleteBtn.addEventListener("click", () => {
+                    homeworkList.removeChild(li);
+                    homeworkItems = homeworkItems.filter(item => item !== homework);
+                });
+            }
+
+            function formatDate(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`; // Corrected syntax
+                return `${day}/${month}/${year} ${timeString}`; // Corrected syntax
+            }
+
+            function setReminder(homework) {
+                const now = new Date();
+                const timeToDeadline = homework.deadline - now;
+                const oneHourBefore = timeToDeadline - (60 * 60 * 1000);
+
+                if (oneHourBefore > 0) {
+                    setTimeout(() => {
+                        alert(`Reminder: Your homework for ${homework.subject} is due in one hour!`); // Corrected syntax
+                    }, oneHourBefore);
+                }
+            }
+
+            function sortHomeworkItems() {
+                homeworkItems.sort((a, b) => {
+                    const priorityOrder = { "High": 1, "Medium": 2, "Low": 3 };
+                    return priorityOrder[a.priority] - priorityOrder[b.priority];
+                });
+            }
+
+            function renderHomeworkItems() {
+                homeworkList.innerHTML = "";
+                homeworkItems.forEach(addHomework);
+            }
+        });
+    </script>
+</body>
+</html>
